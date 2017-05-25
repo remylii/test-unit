@@ -3,9 +3,7 @@
  * @return {string}
  */
 export function showMyAngel(data) {
-  return `
-<div>マイライブリーエンジェル: ${data.name} (${data.age})</div>
-`;
+  return `<div>マイライブリーエンジェル: ${data.name} (${data.age})</div>`;
 }
 
 export function notFoundMyAngel() {

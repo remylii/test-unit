@@ -1,62 +1,64 @@
-// import ApiClient from './lib/ApiClient';
-//
-// const elem = document.querySelector('#application');
-// const first_elem = document.querySelector('#first');
-// const second_elem = document.querySelector('#second');
-//
-// const btn = document.querySelector('#btn');
-//
-// btn.addEventListener('click', (event) => {
-//   event.preventDefault();
-//   console.log('click');
-//   ApiClient.getItem()
-//   .then(function(result) {
-//
-//     first_elem.innerHTML = result;
-//   });
-// }, false);
-
 import $ from 'jquery';
-import { getFirst, getSecond, forceAbort } from './jquery/ApiAction';
+import ApiClient from './jquery/ApiClient';
 
-import ServiceDeliver from './jquery/ServiceDeliver';
-$('.btn-inc').on('click', event => {
-  document.querySelector('.dist-inc').innerHTML = ServiceDeliver.inc();
-});
+import { loadingComponent } from './components/loading';
 
 $('.btn-fetch').on('click', event => {
-  getFirst()
-  .then(result => {
-    console.log('[main.then1] resolve');
-    console.dir(result);
+  const first_elem = document.querySelector('#first'),
+    second_elem = document.querySelector('#second'),
+    third_elem = document.querySelector('#third');
 
-    return getSecond();
-  }, (reject_result) => {
-    console.log('[main.then1] reject');
-    console.dir(reject_result);
-  })
-  .then(sec_item => {
-    console.log('[main.then2] resolve');
-    console.dir(sec_item);
-  }, (sec_item_reject) => {
-    console.log('[main.then2] reject');
-    console.dir(sec_item_reject);
+  first_elem.innerHTML = 'first';
+  second_elem.innerHTML = 'second';
+  third_elem.innerHTML = 'third';
 
-    return $.Deferred().reject();  // どうや
-  })
-  .then((three_resolve) => {
-    console.log('[main.then3] resolve');
-  }, (three_reject) => {
-    console.log('[main.then3] reject');
-  })
-  .fail(fail_data => {
-    console.log('[main.fail] fail');
-    console.dir(fail_data);
-  });
+  ApiClient.getItem()
+    .then((res) => {
+      console.log('[main.then1] resolve');
+      console.dir(res);
+      first_elem.innerHTML = res.body.angel;
+
+      return ApiClient.getSecondItem();
+    }, (res) => {
+      console.log('[main.then1] reject');
+      console.dir(res);
+
+      if (res.textStatus === 'abort') {
+        first_elem.innerHTML = loadingComponent();
+      } else {
+        first_elem.innerHTML = res.body.angel;
+      }
+      return $.Deferred.promise().reject(res);
+    })
+    .then((res) => {
+      console.log('[main.then2] resolve');
+      console.dir(res);
+
+      second_elem.innerHTML = res.body.record;
+    }, (res) => {
+      console.log('[main.then2] reject');
+      console.dir(res);
+
+      if (res.textStatus === 'abort') {
+        second_elem.innerHTML = loadingComponent();
+      } else {
+        second_elem.innerHTML = res.body.record;
+      }
+    })
+    .then((res) => {
+      console.log('[main.then3] resolve');
+      console.dir(res);
+
+      third_elem.innerHTML = 'resolve';
+    }, (res) => {
+      console.log('[main.then3] reject');
+      console.dir(res);
+
+      third_elem.innerHTML = 'reject';
+    });
 });
 
 
 $('.btn-abort').on('click', event => {
-  console.log('[.btn-abort] click');
-  forceAbort();
+  ApiClient.forceAbort();
 });
