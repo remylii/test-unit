@@ -3,6 +3,7 @@ import { fetchItem, fetchSecondItem } from './serviceActions';
 
 import { showMyAngel, notFoundMyAngel } from '../components/show-my-angel';
 import { showAngelSong, notFoundAngelSong } from '../components/angel-song';
+import { loadingComponent } from '../components/loading';
 
 const GET_ITEM = 'GET_ITEM';
 const GET_SECOND_ITEM = 'GET_SECOND_ITEM';
@@ -36,6 +37,24 @@ class ApiClient {
     }
   }
 
+  /**
+   * @name send
+   * @return {object} useful_data - {textStatus: string, body: any}
+   */
+  static send(textStatus, data = null) {
+    let useful_data = {
+      textStatus: textStatus,
+      body: null
+    };
+
+    return Object.assign(useful_data, {
+      body: data
+    });
+  }
+
+  /**
+   * @return {object} response - {textStatus: string, body: any}
+   */
   static getItem() {
     validateXHR(GET_ITEM);
 
@@ -45,36 +64,31 @@ class ApiClient {
         .done((res, textStatus, jqXHR) => {
           console.log('[ApiClient getItem] resolve');
 
-          // 加工データ
-          let useful_data = {
-            textStatus: textStatus,
-            body: null
-          };
-
+          let body = { angel: null };
           if (res.status === 0) {
-            useful_data = Object.assign(useful_data, {
-              body: {
-                angel: showMyAngel(res.response)
-              }
-            });
+            body = {
+              angel: showMyAngel(res.response)
+            };
           }
 
-          defer.resolve(useful_data);
+          defer.resolve( this.send(textStatus, body) );
         })
         .fail((jqXHR, textStatus, err) => {
           console.log('[ApiClient getItem] reject');
           console.log(textStatus);
 
-          let useful_data = { textStatus: textStatus, body: null };
-          if (textStatus !== 'abort') {
-            useful_data = Object.assign(useful_data, {
-              body: {
-                angel: notFoundMyAngel()
-              }
-            });
+          let body = { angel: null };
+          if (textStatus === 'abort') {
+            body = {
+              angel: loadingComponent()
+            };
+          } else {
+            body = {
+              angel: notFoundMyAngel()
+            };
           }
 
-          defer.reject({ textStatus: textStatus });
+          defer.reject( this.send(textStatus, body) );
         })
         .always(() => {
           console.log('[ApiClient getItem] always');
@@ -86,7 +100,7 @@ class ApiClient {
   }
 
   /**
-   * @return {object}
+   * @return {object} response - {textStatus: string, body: any}
    */
   static getSecondItem() {
     validateXHR(GET_SECOND_ITEM);
@@ -97,36 +111,31 @@ class ApiClient {
         .done((res, textStatus, jqXHR) => {
           console.log('[ApiClient getSecondItem] resolve');
 
-          // 加工データ
-          let useful_data = {
-            textStatus: textStatus,
-            body: null
-          };
-
+          let body = { record: null };
           if (res.status === 0) {
-            useful_data = Object.assign(useful_data, {
-              body: {
-                record: showAngelSong(res.response)
-              }
-            });
+            body = {
+              record: showAngelSong(res.response)
+            }
           }
 
-          defer.resolve(useful_data);
+          defer.resolve( this.send(textStatus, body) );
         })
         .fail((jqXHR, textStatus, err) => {
           console.log('[ApiClient getSecondItem] reject');
           console.log(textStatus);
 
-          let useful_data = { textStatus: textStatus, body: null };
-          if (textStatus !== 'abort') {
-            useful_data = Object.assign({
-              body: {
-                record: notFoundAngelSong()
-              }
-            });
+          let body = { record: null };
+          if (textStatus === 'abort') {
+            body = {
+              record: loadingComponent()
+            };
+          } else {
+            body = {
+              record: notFoundAngelSong()
+            };
           }
 
-          defer.reject(useful_data);
+          defer.reject( this.send(textStatus, body) );
         })
         .always(() => {
           console.log('[ApiClient getSecondItem] always');

@@ -15,46 +15,33 @@ $('.btn-fetch').on('click', event => {
   ApiClient.getItem()
     .then((res) => {
       console.log('[main.then1] resolve');
-      console.dir(res);
       first_elem.innerHTML = res.body.angel;
 
       return ApiClient.getSecondItem();
     }, (res) => {
       console.log('[main.then1] reject');
-      console.dir(res);
+      first_elem.innerHTML = res.body.angel;
 
-      if (res.textStatus === 'abort') {
-        first_elem.innerHTML = loadingComponent();
-      } else {
-        first_elem.innerHTML = res.body.angel;
-      }
-      return $.Deferred.promise().reject(res);
+      return $.Deferred().reject(res);
     })
     .then((res) => {
       console.log('[main.then2] resolve');
-      console.dir(res);
-
       second_elem.innerHTML = res.body.record;
+
     }, (res) => {
       console.log('[main.then2] reject');
-      console.dir(res);
+      second_elem.innerHTML = res.body.record;
 
-      if (res.textStatus === 'abort') {
-        second_elem.innerHTML = loadingComponent();
-      } else {
-        second_elem.innerHTML = res.body.record;
-      }
+      return $.Deferred().reject(res);
     })
     .then((res) => {
       console.log('[main.then3] resolve');
-      console.dir(res);
-
       third_elem.innerHTML = 'resolve';
+
     }, (res) => {
       console.log('[main.then3] reject');
-      console.dir(res);
-
       third_elem.innerHTML = 'reject';
+
     });
 });
 
