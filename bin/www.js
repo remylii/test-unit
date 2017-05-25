@@ -20,11 +20,13 @@ app.get('/ajax/item', (req, res) => {
 });
 
 app.get('/ajax/second-item', (req, res) => {
-  res.json({
-    status: 0,
-    response: {
-      title: 'あんずのうた',
-      category: 'cute'
-    }
-  });
+  setTimeout(() => {
+    res.json({
+      status: 0,
+      response: {
+        title: 'あんずのうた',
+        category: 'cute'
+      }
+    });
+  }, 3000);
 });

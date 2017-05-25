@@ -8,6 +8,7 @@
     "start": "NODE_ENV=development webpack-dev-server",
     "build": "NODE_ENV=production webpack --progress",
     "dev": "NODE_ENV=development webpack -w --progress",
+    "server": "NODE_ENV=development babel-node bin/www.js",
     "lint": "eslint src test",
     "typecheck": "flow check",
     "test": "NODE_ENV=test ava -v",
@@ -33,6 +34,7 @@
     "express": "^4.15.3",
     "flow-bin": "^0.46.0",
     "flowtype": "^2.0.0",
+    "jquery": "^3.2.1",
     "nyc": "^10.3.2",
     "webpack": "^2.5.1"
   },
