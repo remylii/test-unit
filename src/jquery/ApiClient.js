@@ -1,10 +1,6 @@
 import $ from 'jquery';
 import { fetchItem, fetchSecondItem } from './serviceActions';
 
-import { showMyAngel, notFoundMyAngel } from '../components/show-my-angel';
-import { showAngelSong, notFoundAngelSong } from '../components/angel-song';
-import { loadingComponent } from '../components/loading';
-
 const GET_ITEM = 'GET_ITEM';
 const GET_SECOND_ITEM = 'GET_SECOND_ITEM';
 
@@ -14,7 +10,7 @@ let xhr = {
 };
 
 function validateXHR(key) {
-  console.log('[validateXHR]');
+  console.log('[validateXHR] :' + key);
   const target = xhr[key];
 
   if (target) {
@@ -38,61 +34,53 @@ class ApiClient {
   }
 
   /**
-   * @name send
-   * @return {object} useful_data - {textStatus: string, body: any}
+   * @name rejectData
+   * @var {string} textStatus
+   * @return {object} reject_data - { status: number, textStatus: string, error: string }
    */
-  static send(textStatus, data = null) {
-    let useful_data = {
-      textStatus: textStatus,
-      body: null
+  static rejectData(textStatus, code = -1, err = '') {
+    let reject_data = {
+      status: -1,
+      textStatus: '',
+      error: ''
     };
 
-    return Object.assign(useful_data, {
-      body: data
+    return Object.assign(reject_data, {
+      status: code,
+      textStatus: textStatus,
+      error: err
     });
   }
 
   /**
-   * @return {object} response - {textStatus: string, body: any}
+   * @return {object} response - {}
    */
   static getItem() {
     validateXHR(GET_ITEM);
 
     return $.Deferred((defer) => {
-      console.group('[ApiClient getItem]');
+      console.log('[ApiClient getItem]');
       xhr[GET_ITEM] = fetchItem()
         .done((res, textStatus, jqXHR) => {
           console.log('[ApiClient getItem] resolve');
 
-          let body = { angel: null };
+          let resolve_data = null;
           if (res.status === 0) {
-            body = {
-              angel: showMyAngel(res.response)
-            };
-          }
+            resolve_data = res.response;
+          } else {
 
-          defer.resolve( this.send(textStatus, body) );
+            defer.reject(textStatus, res.status, 'apiステータスエラー');
+          }
+          defer.resolve( resolve_data );
         })
         .fail((jqXHR, textStatus, err) => {
           console.log('[ApiClient getItem] reject');
           console.log(textStatus);
 
-          let body = { angel: null };
-          if (textStatus === 'abort') {
-            body = {
-              angel: loadingComponent()
-            };
-          } else {
-            body = {
-              angel: notFoundMyAngel()
-            };
-          }
-
-          defer.reject( this.send(textStatus, body) );
+          defer.reject(this.rejectData(textStatus));
         })
         .always(() => {
           console.log('[ApiClient getItem] always');
-          console.groupEnd('[ApiClient getItem]');
           xhr[GET_ITEM] = null;
         });
 
@@ -106,43 +94,53 @@ class ApiClient {
     validateXHR(GET_SECOND_ITEM);
 
     return $.Deferred((defer) => {
-      console.group('[ApiClient getSecondItem]');
+      console.log('[ApiClient getSecondItem]');
       xhr[GET_SECOND_ITEM] = fetchSecondItem()
         .done((res, textStatus, jqXHR) => {
           console.log('[ApiClient getSecondItem] resolve');
 
-          let body = { record: null };
+          let resolve_data = null;
           if (res.status === 0) {
-            body = {
-              record: showAngelSong(res.response)
-            }
+            resolve_data = res.response;
+          } else {
+            defer.reject(this.rejectData(textStatus, res.status, 'api error'));
           }
 
-          defer.resolve( this.send(textStatus, body) );
+          defer.resolve(resolve_data);
         })
         .fail((jqXHR, textStatus, err) => {
           console.log('[ApiClient getSecondItem] reject');
           console.log(textStatus);
 
-          let body = { record: null };
-          if (textStatus === 'abort') {
-            body = {
-              record: loadingComponent()
-            };
-          } else {
-            body = {
-              record: notFoundAngelSong()
-            };
-          }
-
-          defer.reject( this.send(textStatus, body) );
+          defer.reject(this.rejectData(textStatus));
         })
         .always(() => {
           console.log('[ApiClient getSecondItem] always');
-          console.groupEnd('[ApiClient getSecondItem]');
           xhr[GET_SECOND_ITEM] = null;
         });
 
+    }).promise();
+  }
+
+  /**
+   * when使う
+   */
+  static getBoth() {
+    return $.Deferred((defer) => {
+      $.when(this.getItem(), this.getSecondItem())
+        .done((v1, v2) => {
+          console.dir('[ApiClient getBoth] done');
+
+          defer.resolve(v1, v2);
+        })
+        .fail((reject_data) => {
+          console.log('[ApiClient getBoth] fail');
+
+          defer.reject(reject_data);
+        })
+        .always(() => {
+          console.log('[ApiClient getBoth] always');
+        });
     }).promise();
   }
 }
