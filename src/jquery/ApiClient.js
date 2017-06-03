@@ -35,7 +35,7 @@ class ApiClient {
 
   /**
    * @name rejectData
-   * @var {string} textStatus
+   * @param {string} textStatus
    * @return {object} reject_data - { status: number, textStatus: string, error: string }
    */
   static rejectData(textStatus, code = -1, err = '') {
